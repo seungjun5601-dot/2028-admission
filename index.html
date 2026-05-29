@@ -154,6 +154,10 @@ body {
 }
 .chip:hover { border-color: var(--blue); color: var(--blue); background: #eff6ff; }
 .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
+.chip-star { background: #fffbeb; border-color: #f59e0b; color: #b45309; font-weight: 700; }
+.chip-star:hover { background: #fef3c7; border-color: #d97706; }
+.chip-star.active { background: #f59e0b; border-color: #d97706; color: #fff; }
+.filter-divider { width: 1px; height: 18px; background: var(--border); margin: 0 4px; flex-shrink: 0; align-self: center; }
 
 /* 보조 필터 */
 .filter-extra { background: #f8fafc; border-bottom: 1px solid var(--border); }
@@ -340,11 +344,19 @@ const MAJOR_BASE = "./카테고리별_전체모음/전공안내/";
 
 const REGION_ORDER = ["전체","서울","경기","인천","강원","충남","충북","대전","세종","전북","전남","광주","경남","경북","대구","부산","울산","제주"];
 
+// 주요대학 목록 (이름 시작 기준 매칭)
+const TOP_UNIVS = [
+  "건국대학교","경희대학교","고려대학교","동국대학교","서강대학교",
+  "서울대학교","서울시립대학교","성균관대학교","숙명여자대학교",
+  "이화여자대학교","인하대학교","중앙대학교","한국외국어대학교"
+];
+
 // 타입별 아이콘 & 배지 텍스트
 const T_ICON  = { pdf:"📄", drive:"☁️", youtube:"▶", notion:"📝", web:"🔗" };
 const T_BADGE = { drive:"Drive", youtube:"YouTube", notion:"Notion", web:"웹페이지" };
 
 let activeRegion = "전체";
+let activeTop    = false;
 let searchQuery  = "";
 let onlyGuide = false, onlyMajor = false, onlyUrl = false;
 
@@ -399,18 +411,38 @@ function buildRegionChips() {
   const container = document.getElementById("region-chips");
   const label = container.querySelector(".filter-label");
   container.innerHTML = "";
+
+  // ── 주요대학 칩 ──
+  const topCount = UNIVERSITIES.filter(u => TOP_UNIVS.some(t => u.name.startsWith(t))).length;
+  const topBtn = document.createElement("button");
+  topBtn.className = "chip chip-star" + (activeTop ? " active" : "");
+  topBtn.textContent = `⭐ 주요대학 (${topCount})`;
+  topBtn.addEventListener("click", () => {
+    activeTop = !activeTop;
+    if (activeTop) activeRegion = "전체";
+    buildRegionChips();
+    render();
+  });
+  container.appendChild(topBtn);
+
+  // 구분선
+  const divider = document.createElement("span");
+  divider.className = "filter-divider";
+  container.appendChild(divider);
+
+  // ── 지역 칩 ──
   container.appendChild(label);
 
   regions.forEach(r => {
     const btn = document.createElement("button");
-    btn.className = "chip" + (r === activeRegion ? " active" : "");
+    btn.className = "chip" + (!activeTop && r === activeRegion ? " active" : "");
     const count = r === "전체" ? UNIVERSITIES.length : UNIVERSITIES.filter(u => u.region === r).length;
     btn.textContent = r === "전체" ? `전체 (${count})` : `${r} (${count})`;
     btn.dataset.region = r;
     btn.addEventListener("click", () => {
+      activeTop    = false;
       activeRegion = r;
-      container.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
-      btn.classList.add("active");
+      buildRegionChips();
       render();
     });
     container.appendChild(btn);
@@ -419,7 +451,8 @@ function buildRegionChips() {
 
 function filtered() {
   return UNIVERSITIES.filter(u => {
-    if (activeRegion !== "전체" && u.region !== activeRegion) return false;
+    if (activeTop && !TOP_UNIVS.some(t => u.name.startsWith(t))) return false;
+    if (!activeTop && activeRegion !== "전체" && u.region !== activeRegion) return false;
     if (searchQuery) {
       const q = searchQuery.replace(/\s/g, "");
       if (!u.name.replace(/\s/g, "").includes(q)) return false;
