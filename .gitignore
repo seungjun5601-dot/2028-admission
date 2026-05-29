@@ -1,0 +1,14 @@
+# PDF 자료 폴더 (구글 드라이브로 제공, git 제외)
+카테고리별_전체모음/
+
+# 원본 로고 (배경 제거 버전만 사용)
+school_logo.jpg
+
+# 작업용 임시파일
+*.xlsx
+excel_data_raw.txt
+generate_universities.js
+merge_excel.js
+
+# Claude 내부 설정
+.claude/
