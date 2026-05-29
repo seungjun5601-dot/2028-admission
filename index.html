@@ -452,11 +452,14 @@ function buildRegionChips() {
 
 function filtered() {
   return UNIVERSITIES.filter(u => {
-    if (activeTop && !TOP_UNIVS.includes(u.name)) return false;
-    if (!activeTop && activeRegion !== "전체" && u.region !== activeRegion) return false;
+    // 검색어가 있으면 전체 대학에서 검색 (지역·주요대학 필터 무시)
     if (searchQuery) {
       const q = searchQuery.replace(/\s/g, "");
       if (!u.name.replace(/\s/g, "").includes(q)) return false;
+    } else {
+      // 검색어 없을 때만 지역·주요대학 필터 적용
+      if (activeTop && !TOP_UNIVS.includes(u.name)) return false;
+      if (!activeTop && activeRegion !== "전체" && u.region !== activeRegion) return false;
     }
     if (onlyGuide && !hasGuide(u)) return false;
     if (onlyMajor && !hasMajor(u)) return false;
