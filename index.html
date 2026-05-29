@@ -344,11 +344,12 @@ const MAJOR_BASE = "./카테고리별_전체모음/전공안내/";
 
 const REGION_ORDER = ["전체","서울","경기","인천","강원","충남","충북","대전","세종","전북","전남","광주","경남","경북","대구","부산","울산","제주"];
 
-// 주요대학 목록 (이름 시작 기준 매칭)
+// 주요대학 목록 (정확한 이름 일치)
 const TOP_UNIVS = [
-  "건국대학교","경희대학교","고려대학교","동국대학교","서강대학교",
-  "서울대학교","서울시립대학교","성균관대학교","숙명여자대학교",
-  "이화여자대학교","인하대학교","중앙대학교","한국외국어대학교"
+  "건국대학교(서울)","경희대학교(서울)","고려대학교(서울)","동국대학교(서울)",
+  "서강대학교","서울대학교","서울시립대학교","성균관대학교(서울)",
+  "숙명여자대학교","연세대학교(서울)","이화여자대학교","인하대학교",
+  "중앙대학교(서울)","한국외국어대학교(서울)","한양대학교(서울)"
 ];
 
 // 타입별 아이콘 & 배지 텍스트
@@ -413,7 +414,7 @@ function buildRegionChips() {
   container.innerHTML = "";
 
   // ── 주요대학 칩 ──
-  const topCount = UNIVERSITIES.filter(u => TOP_UNIVS.some(t => u.name.startsWith(t))).length;
+  const topCount = UNIVERSITIES.filter(u => TOP_UNIVS.includes(u.name)).length;
   const topBtn = document.createElement("button");
   topBtn.className = "chip chip-star" + (activeTop ? " active" : "");
   topBtn.textContent = `⭐ 주요대학 (${topCount})`;
@@ -451,7 +452,7 @@ function buildRegionChips() {
 
 function filtered() {
   return UNIVERSITIES.filter(u => {
-    if (activeTop && !TOP_UNIVS.some(t => u.name.startsWith(t))) return false;
+    if (activeTop && !TOP_UNIVS.includes(u.name)) return false;
     if (!activeTop && activeRegion !== "전체" && u.region !== activeRegion) return false;
     if (searchQuery) {
       const q = searchQuery.replace(/\s/g, "");
